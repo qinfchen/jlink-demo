@@ -6,10 +6,11 @@ jobs:
     environment:
       GRADLE_OPTS: -Dorg.gradle.console=plain -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false
       FL_OUTPUT_DIR: output
+      JAVA_HOME: /Library/Java/JavaVirtualMachines/jdk-10.0.1.jdk/Contents/Home
 
     steps:
       - checkout
-      - run: brew cask install java
+      - run: brew upgrade && brew cask install java
       - restore_cache:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
