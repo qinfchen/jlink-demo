@@ -1,0 +1,57 @@
+apply plugin: 'com.palantir.jigsaw-patch'
+
+needsPatching {
+    module = "com.fasterxml.jackson.core"
+}
+
+dependencies {
+    needsPatching 'com.fasterxml.jackson.core:jackson-core'
+}
+
+File jarPath = configurations.needsPatching.getResolvedConfiguration().getFiles()[0]
+String jarName = jarPath.getName().replace(".jar", "")
+
+task jdeps(type: Exec) {
+    def outputDir = "$buildDir/jdeps/${jarName}"
+    commandLine "jdeps", "--generate-module-info", outputDir, jarPath
+    outputs.dir file(outputDir)
+}
+
+task merge(type: Copy, dependsOn: [unpack, jdeps]) {
+    from(jdeps.outputs.files)
+    into("$buildDir/unpack/${jarName}")
+    eachFile { details -> details.path = file(details.path).getName() }
+    includeEmptyDirs = false
+}
+
+task compileModuleInfo(type: Exec, dependsOn: merge) {
+
+    def input = file("$buildDir/unpack/${jarName}/module-info.java")
+    def outputDir = file("$buildDir/compileModuleInfo/${jarName}")
+
+    commandLine "javac",
+        "-d", outputDir,
+        "--add-modules", needsPatching.module,
+        "--patch-module", "${needsPatching.module}=$buildDir/unpack/${jarName}",
+        input
+
+    outputs.dir outputDir
+}
+
+task copyJarForPatching(type: Copy) {
+    from jarPath
+    into("$buildDir/patchJar")
+}
+
+task patchJar(type: Exec) {
+    dependsOn copyJarForPatching
+    dependsOn compileModuleInfo
+
+    def jarToPatch = "$buildDir/patchJar/${jarName}.jar"
+    def classFile = file("$buildDir/compileModuleInfo/${jarName}/module-info.class")
+    def changeDir = "$buildDir/compileModuleInfo/${jarName}"
+
+    commandLine "jar", "uf", jarToPatch, "-C", changeDir, classFile.getName()
+
+    outputs.file "$buildDir/patchJar/${jarName}.jar"
+}

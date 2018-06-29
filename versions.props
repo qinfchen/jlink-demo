@@ -1,0 +1,10 @@
+com.fasterxml.jackson.*:jackson-* = 2.9.5
+com.palantir.conjure:* = 3.1.0
+junit:junit = 4.12
+com.google.guava:guava = 21.0
+org.assertj:* = 3.10.0
+com.github.everit-org.json-schema:org.everit.json.schema = 1.8.0
+commons-logging:commons-logging = 1.2
+commons-collections:commons-collections = 3.2.2
+org.slf4j:slf4j-api = 1.8.0-beta2
+org.slf4j:slf4j-simple = 1.8.0-beta2

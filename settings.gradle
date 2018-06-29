@@ -1,0 +1,11 @@
+pluginManagement {
+    mavenCentral()
+    maven {
+        url 'https://dl.bintray.com/palantir/releases/'
+    }
+}
+
+include 'cli'
+include 'patched:jackson-core'
+include 'patched:jackson-annotations'
+include 'patched:jackson-databind'

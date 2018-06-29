@@ -1,0 +1,62 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: dmreiland/alpine-oraclejdk10
+    environment:
+      GRADLE_OPTS: -Dorg.gradle.console=plain -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false
+
+    steps:
+      - checkout
+      - run: apk update && apk upgrade && apk add --no-cache git
+      - restore_cache:
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - restore_cache:
+          key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
+      - run: ./gradlew --parallel resolveConfigurations
+
+      - save_cache:
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - ~/.gradle/wrapper
+      - save_cache:
+          key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
+          paths:
+            - ~/.gradle/caches
+
+      - run: ./gradlew doSomething
+      - run: ./gradlew tgz
+
+      - store_artifacts:
+          path: ./cli/build/distributions/
+          destination: cli
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./cli/build/mydist
+
+  run:
+    docker:
+        - image: docker pull buildpack-deps:sid-scm
+
+    steps:
+      - attach_workspace:
+          at: .
+
+      - run: find .
+      - run: ./cli/build/mydist/bin/cli
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - run:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
