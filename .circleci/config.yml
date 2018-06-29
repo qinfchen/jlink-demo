@@ -1,8 +1,8 @@
 version: 2
 jobs:
-  build-and-run:
+  darwin-build-and-run:
     macos:
-      xcode: "9.2.0" 
+      xcode: "9.2.0"
     environment:
       GRADLE_OPTS: -Dorg.gradle.console=plain -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false
       FL_OUTPUT_DIR: output
@@ -25,23 +25,40 @@ jobs:
           key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
           paths:
             - ~/.gradle/caches
-
       - run: ./gradlew doSomething
       - run: ./gradlew tgz
       - run: ./cli/build/mydist/bin/cli
-
       - store_artifacts:
           path: ./cli/build/distributions/
-          destination: cli
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./cli/build/mydist
+          destination: darwin-cli
+  linux-build-and-run:
+    docker:
+      - image: circleci/openjdk:10.0.1-jdk-node-browsers
+    environment:
+      GRADLE_OPTS: -Dorg.gradle.console=plain -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false
+
+    steps:
+      - checkout
+      - restore_cache:
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - restore_cache:
+          key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
+      - run: ./gradlew --parallel resolveConfigurations
+      - run: ./gradlew doSomething
+      - run: ./gradlew tgz
+      - run: ./cli/build/mydist/bin/cli
+      - store_artifacts:
+          path: ./cli/build/distributions/
+          destination: linux-cli
 workflows:
   version: 2
   build:
     jobs:
-      - build-and-run:
+      - linux-build-and-run:
+          filters:
+            tags:
+              only: /.*/
+      - darwin-build-and-run:
           filters:
             tags:
               only: /.*/
