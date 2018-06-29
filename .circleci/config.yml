@@ -1,16 +1,11 @@
 version: 2
 jobs:
-  darwin-build-and-run:
-    macos:
-      xcode: "9.2.0"
+  compile:
+    docker:
+      - image: circleci/openjdk:10.0.1-jdk-node-browsers
     environment:
       GRADLE_OPTS: -Dorg.gradle.console=plain -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false
-      FL_OUTPUT_DIR: output
-      JAVA_HOME: /Library/Java/JavaVirtualMachines/jdk-10.0.1.jdk/Contents/Home
-
     steps:
-      - checkout
-      - run: brew upgrade && brew cask install java
       - restore_cache:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
@@ -25,6 +20,21 @@ jobs:
           key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
           paths:
             - ~/.gradle/caches
+
+  darwin-build-and-run:
+    macos:
+      xcode: "9.2.0"
+    environment:
+      GRADLE_OPTS: -Dorg.gradle.console=plain -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false
+      FL_OUTPUT_DIR: output
+      JAVA_HOME: /Library/Java/JavaVirtualMachines/jdk-10.0.1.jdk/Contents/Home
+    steps:
+      - checkout
+      - run: brew upgrade && brew cask install java
+      - restore_cache:
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - restore_cache:
+          key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
       - run: ./gradlew doSomething
       - run: ./gradlew tgz
       - run: ./cli/build/mydist/bin/cli
@@ -43,7 +53,6 @@ jobs:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
           key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
-      - run: ./gradlew --parallel resolveConfigurations
       - run: ./gradlew doSomething
       - run: ./gradlew tgz
       - run: ./cli/build/mydist/bin/cli
@@ -54,11 +63,17 @@ workflows:
   version: 2
   build:
     jobs:
+      - compile:
+          filters:
+            tags:
+              only: /.*/
       - linux-build-and-run:
+          requires: [ compile ]
           filters:
             tags:
               only: /.*/
       - darwin-build-and-run:
+          requires: [ compile ]
           filters:
             tags:
               only: /.*/
