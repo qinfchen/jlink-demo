@@ -11,10 +11,10 @@ jobs:
       - checkout
       - run: brew upgrade
       - restore_cache:
-          key: brew-v2-{{ checksum "/usr/local/Homebrew/bin/brew" }}
+          key: brew-{{ checksum "/usr/local/Homebrew/bin/brew" }}
       - run: brew cask install java
       - save_cache:
-          key: brew-v2-{{ checksum "/usr/local/Homebrew/bin/brew" }}
+          key: brew-{{ checksum "/usr/local/Homebrew/bin/brew" }}
           paths:
             - /Library/java
       - restore_cache:
