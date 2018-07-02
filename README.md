@@ -72,7 +72,8 @@ The workflow in IntelliJ is not seamless, but still workable.  Use _File_ -> _Op
 
 ## Tooling Gotchas
 
-**Patched jars** - To help java libraries migrating to Java 9, Java libraries can use automatic modules in conjunction with `Automatic-Module-Name`  As of version 2.9.5, Jackson does not yet publish a `module-info` file.  In order to use `jlink`, the build script expands these jars, uses the `jdeps` tool to generate a `module-info` and then re-compiles them. 
+**Patched jars** - To help java libraries migrating to Java 9, Java libraries can use automatic modules in conjunction with `Automatic-Module-Name`  As of version 2.9.5, Jackson does not yet publish a `module-info` file.  In order to use `jlink`, the build script expands these jars, uses the `jdeps` tool to generate a `module-info` and then re-compiles them.
+
     - [PR](https://github.com/FasterXML/jackson-core/pull/358) for Jigsaw support has been slate for the 3.x release.
     - [moditect](https://github.com/moditect/moditect) provides tools for working with Jigsaw and solves issues as such EXCEPT that it is exclusively for Maven plugins. [PR](https://github.com/moditect/moditect/pull/44) for gradle plugin hasn't been updated since March.
 
