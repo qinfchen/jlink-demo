@@ -13,13 +13,6 @@ dependencies {
 File jarPath = configurations.needsPatching.getResolvedConfiguration().getFiles()[0]
 String jarName = jarPath.getName().replace(".jar", "")
 
-task merge(type: Copy, dependsOn: [unpack, jdeps]) {
-    from(jdeps.outputs.files)
-    into("$buildDir/unpack/${jarName}")
-    eachFile { details -> details.path = file(details.path).getName() }
-    includeEmptyDirs = false
-}
-
 task copyJarForPatching(type: Copy) {
     from jarPath
     into("$buildDir/patchJar")
