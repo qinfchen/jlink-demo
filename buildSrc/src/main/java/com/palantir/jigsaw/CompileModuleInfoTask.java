@@ -60,21 +60,23 @@ public class CompileModuleInfoTask extends Exec {
     @TaskAction
     @Override
     protected void exec() {
-        File modulePath = new File(getProject().getBuildDir(), "patchJar");
-
         List<String> commands = new ArrayList<>();
         commands.add("javac");
         commands.add("-d");
         commands.add(getOutputDir().toString());
-        if (modulePath.exists()) {
+
+        String files = getProject().fileTree(new File(getProject().getBuildDir().getAbsolutePath(), "patchJar"))
+                .getAsPath();
+        if (files != null && !files.isEmpty()) {
             commands.add("--module-path");
-            commands.add(modulePath.getAbsolutePath());
+            commands.add(files);
         }
         commands.add("--add-modules");
         commands.add(getModule());
         commands.add("--patch-module");
         commands.add(String.format("%s=%s/unpack/%s", getModule(), getProject().getBuildDir(), getJarName()));
         commands.add(getModuleInfo().getAbsolutePath());
+//        commands.add("-verbose");
 
         super.setCommandLine(commands);
         super.exec();

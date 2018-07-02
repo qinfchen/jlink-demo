@@ -3,6 +3,7 @@ package com.palantir.jigsaw;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.internal.file.IdentityFileResolver;
 import org.gradle.api.java.archives.Manifest;
@@ -25,12 +26,10 @@ public class JigsawPatchPlugin implements Plugin<Project> {
 
         project.getConfigurations().create("needsPatching");
         DefaultTask patchJars = project.getTasks().create("patchJars", DefaultTask.class);
-
         project.afterEvaluate(p -> {
             extension.getModules().stream().forEach(entry -> {
                 File jarFile = JigsawPatchPlugin.getJarPath(
                         project, "needsPatching", Objects.toString(entry));
-                System.out.println("patching " + jarFile.toString());
 
                 // hack hack use guava
                 String jarName = jarFile.getName().replace(".jar", "");
@@ -39,7 +38,7 @@ public class JigsawPatchPlugin implements Plugin<Project> {
                         + nameSegs[1].substring(0, 1).toUpperCase() + nameSegs[1].substring(1);
 
                 Copy unpack = project.getTasks().create("unpack" + jarUpperCamelCase, Copy.class);
-                Exec jdeps = project.getTasks().create("jdeps" + jarUpperCamelCase, Exec.class);
+                JdepsTask jdeps = project.getTasks().create("jdeps" + jarUpperCamelCase, JdepsTask.class);
                 Copy merge = project.getTasks().create("merge" + jarUpperCamelCase, Copy.class);
 
                 CompileModuleInfoTask compileModuleInfo = project.getTasks().create(
@@ -54,15 +53,14 @@ public class JigsawPatchPlugin implements Plugin<Project> {
                 File outputDir = new File(String.format("%s/compileModuleInfo/%s",
                         project.getBuildDir(), jarName));
 
-                unpack.doLast(task -> {
-                    File manifestFile = new File(String.format("%s/META-INF/MANIFEST.MF",
-                            unpack.getDestinationDir()));
-                    System.out.println("unpacking " + unpack.getDestinationDir().toString() + " done");
-                    Manifest manifest = new DefaultManifest(manifestFile, new IdentityFileResolver());
-                    compileModuleInfo.setModule(() -> (String) manifest.getAttributes().get("Automatic-Module-Name"));
-                });
+                File manifestFile = new File(String.format("%s/META-INF/MANIFEST.MF",
+                        unpack.getDestinationDir()));
 
                 // compileModuleInfo tasks
+                compileModuleInfo.setModule(() -> {
+                    Manifest manifest = new DefaultManifest(manifestFile, new IdentityFileResolver());
+                    return (String) manifest.getAttributes().get("Automatic-Module-Name");
+                });
                 compileModuleInfo.dependsOn(merge);
                 compileModuleInfo.setJarName(() -> jarName);
                 compileModuleInfo.setOutputDir(outputDir);
@@ -71,19 +69,8 @@ public class JigsawPatchPlugin implements Plugin<Project> {
 
                 // jdeps
                 File jdepsOutputDir = new File(String.format("%s/jdeps/%s", project.getBuildDir(), jarName));
-                List<String> jdepsCommands = new ArrayList<>();
-                jdepsCommands.add("jdeps");
-                File modulePath = new File(project.getBuildDir().getAbsolutePath(), "patchJar");
-                String files = project.fileTree(new File(project.getBuildDir().getAbsolutePath(), "patchJar")).getAsPath();
-                System.out.println(files);
-                if (modulePath.exists()) {
-                    jdepsCommands.add("--module-path");
-                    jdepsCommands.add(files);
-                }
-                jdepsCommands.add("--generate-module-info");
-                jdepsCommands.add(jdepsOutputDir.toString());
-                jdepsCommands.add(jarFile.getAbsolutePath());
-                jdeps.setCommandLine(jdepsCommands);
+                jdeps.setJarFile(jarFile);
+                jdeps.setJarName(() -> jarName);
                 jdeps.getOutputs().dir(jdepsOutputDir);
 
                 // merge
@@ -113,6 +100,9 @@ public class JigsawPatchPlugin implements Plugin<Project> {
                 patchJar.setCommandLine(patchJarCommands);
                 patchJar.getOutputs().file(jarToPatch);
 
+                // hack hack ensure previous jars are patched
+                patchJars.getDependsOn().stream().map(task -> jdeps.dependsOn(task));
+                patchJars.getDependsOn().stream().map(task -> patchJar.dependsOn(task));
                 patchJars.dependsOn(patchJar);
             });
         });

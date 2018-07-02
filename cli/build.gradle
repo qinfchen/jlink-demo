@@ -7,9 +7,10 @@ plugins {
 apply plugin: 'com.palantir.jigsaw-patch'
 
 needsPatching {
+    // order matters
     implementation 'com.fasterxml.jackson.core:jackson-core'
     implementation 'com.fasterxml.jackson.core:jackson-annotations'
-    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
 }
 
 javaModule.name = 'cli'
@@ -18,6 +19,7 @@ mainClassName = 'cli.Main'
 dependencies {
     implementation 'org.slf4j:slf4j-api'
     implementation 'org.slf4j:slf4j-simple' // should this be runtime ??
+
     implementation files('./build/patchJar/jackson-core-2.9.5.jar') {
         builtBy tasks.getByPath('patchJars')
     }
@@ -26,13 +28,13 @@ dependencies {
         builtBy tasks.getByPath('patchJars')
     }
 
-    implementation files('.build/patchJar/jackson-databind-2.9.5.jar') {
+    implementation files('./build/patchJar/jackson-databind-2.9.5.jar') {
         builtBy tasks.getByPath('patchJars')
     }
 
     needsPatching 'com.fasterxml.jackson.core:jackson-core'
     needsPatching 'com.fasterxml.jackson.core:jackson-annotations'
-    needsPatching "com.fasterxml.jackson.core:jackson-databind"
+    needsPatching 'com.fasterxml.jackson.core:jackson-databind'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
@@ -45,7 +47,7 @@ task link(type: Exec) {
 
     def outputDir = "$buildDir/mydist";
     def modulePath = sourceSets.main.output.getAsPath() + ":" + configurations.compileClasspath.getAsPath()
-
+    print modulePath
     doFirst {
         "rm -rf ${outputDir}".execute()
     }
