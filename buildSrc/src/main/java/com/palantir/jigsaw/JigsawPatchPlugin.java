@@ -11,6 +11,7 @@ import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.Exec;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,8 +29,8 @@ public class JigsawPatchPlugin implements Plugin<Project> {
         Exec jdeps = project.getTasks().create("jdeps", Exec.class);
         Copy merge = project.getTasks().create("merge", Copy.class);
         Exec compileModuleInfo = project.getTasks().create("compileModuleInfo", Exec.class);
-//        Copy copyJarForPatching = project.getTasks().create("copyJarForPatching", Copy.class);
-//        Exec patchJar  = project.getTasks().create("patchJar", Exec.class);
+        Copy copyJarForPatching = project.getTasks().create("copyJarForPatching", Copy.class);
+        Exec patchJar  = project.getTasks().create("patchJar", Exec.class);
 
         project.afterEvaluate(p -> {
             extension.getModules().stream().forEach(entry -> {
@@ -86,6 +87,25 @@ public class JigsawPatchPlugin implements Plugin<Project> {
                 merge.into(new File(String.format("%s/unpack/%s", project.getBuildDir(), jarName)));
                 merge.setIncludeEmptyDirs(false);
                 merge.eachFile(details -> details.setPath(details.getName()));
+
+                copyJarForPatching.from(jarFile);
+                copyJarForPatching.into(Paths.get(project.getBuildDir().getAbsolutePath(), "patchJar"));
+
+                patchJar.dependsOn(copyJarForPatching);
+                patchJar.dependsOn(compileModuleInfo);
+                File jarToPatch = new File(String.format("%s/patchJar/%s.jar", project.getBuildDir(), jarName));
+                File classFile = new File(String.format("%s/compileModuleInfo/%s/module-info.class", project.getBuildDir(), jarName));
+                File changeDir = new File(String.format("%s/compileModuleInfo/%s", project.getBuildDir(), jarName));
+                List<String> patchJarCommands = new ArrayList<>();
+                patchJarCommands.add("jar");
+                patchJarCommands.add("uf");
+                patchJarCommands.add(jarToPatch.getAbsolutePath());
+                patchJarCommands.add("-C");
+                patchJarCommands.add(changeDir.getAbsolutePath());
+                patchJarCommands.add(classFile.getName());
+                patchJar.setCommandLine(patchJarCommands);
+                patchJar.getOutputs().file(jarToPatch);
+
             });
         });
     }

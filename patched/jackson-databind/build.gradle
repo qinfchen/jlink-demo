@@ -8,23 +8,3 @@ dependencies {
     needsPatching 'com.fasterxml.jackson.core:jackson-databind'
 }
 
-File jarPath = configurations.needsPatching.getResolvedConfiguration().getFiles()[0]
-String jarName = jarPath.getName().replace(".jar", "")
-
-task copyJarForPatching(type: Copy) {
-    from jarPath
-    into("$buildDir/patchJar")
-}
-
-task patchJar(type: Exec) {
-    dependsOn copyJarForPatching
-    dependsOn compileModuleInfo
-
-    def jarToPatch = "$buildDir/patchJar/${jarName}.jar"
-    def classFile = file("$buildDir/compileModuleInfo/${jarName}/module-info.class")
-    def changeDir = "$buildDir/compileModuleInfo/${jarName}"
-
-    commandLine "jar", "uf", jarToPatch, "-C", changeDir, classFile.getName()
-
-    outputs.file "$buildDir/patchJar/${jarName}.jar"
-}
