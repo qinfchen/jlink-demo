@@ -1,30 +1,5 @@
 version: 2
 jobs:
-  compile:
-    docker:
-      - image: circleci/openjdk:10.0.1-jdk-node-browsers
-    environment:
-      GRADLE_OPTS: -Dorg.gradle.console=plain -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false
-    steps:
-      - checkout
-      - restore_cache:
-          key: gradle-wrapper-v2-{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-      - restore_cache:
-          key: gradle-cache-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
-      - run: ./gradlew --parallel resolveConfigurations
-      - save_cache:
-          key: gradle-wrapper-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-          paths:
-            - ~/.gradle/wrapper
-      - save_cache:
-          key: gradle-cache-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
-          paths:
-            - ~/.gradle/caches
-      - run: ./gradlew --parallel --stacktrace classes testClasses
-      - persist_to_workspace:
-          root: .
-          paths: [ . ]
-
   darwin-build-and-run:
     macos:
       xcode: "9.2.0"
@@ -34,14 +9,28 @@ jobs:
       JAVA_HOME: /Library/Java/JavaVirtualMachines/jdk-10.0.1.jdk/Contents/Home
     steps:
       - checkout
+      - restore_cache:
+          key: brew-v2-{{ checksum "/usr/local/Homebrew/bin/brew" }}
       - run: brew upgrade && brew cask install java
+      - save_cache:
+          key: brew-v2-{{ checksum "/usr/local/Homebrew/bin/brew" }}
+          paths:
+            - /usr/local
       - restore_cache:
-          key: gradle-wrapper-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          key: gradle-wrapper-darwin-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
-          key: gradle-cache-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
+          key: gradle-cache-darwin-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
       - run: ./gradlew doSomething
       - run: ./gradlew tgz
       - run: ./cli/build/mydist/bin/cli
+      - save_cache:
+          key: gradle-wrapper-darwin-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - ~/.gradle/wrapper
+      - save_cache:
+          key: gradle-cache-darwin-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
+          paths:
+            - ~/.gradle/caches
       - store_artifacts:
           path: ./cli/build/distributions/
           destination: darwin-cli
@@ -54,12 +43,20 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: gradle-wrapper-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          key: gradle-wrapper-linux-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
-          key: gradle-cache-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
+          key: gradle-cache-linux-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
       - run: ./gradlew doSomething
       - run: ./gradlew tgz
       - run: ./cli/build/mydist/bin/cli
+      - save_cache:
+          key: gradle-wrapper-linux-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - ~/.gradle/wrapper
+      - save_cache:
+          key: gradle-cache-linux-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
+          paths:
+            - ~/.gradle/caches
       - store_artifacts:
           path: ./cli/build/distributions/
           destination: linux-cli
