@@ -16,6 +16,7 @@ jobs:
           key: brew-v2-{{ checksum "/usr/local/Homebrew/bin/brew" }}
           paths:
             - /usr/local
+            - /Library
       - restore_cache:
           key: gradle-wrapper-darwin-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
@@ -64,17 +65,11 @@ workflows:
   version: 2
   build:
     jobs:
-      - compile:
-          filters:
-            tags:
-              only: /.*/
       - linux-build-and-run:
-          requires: [ compile ]
           filters:
             tags:
               only: /.*/
       - darwin-build-and-run:
-          requires: [ compile ]
           filters:
             tags:
               only: /.*/
