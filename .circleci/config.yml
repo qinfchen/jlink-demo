@@ -6,12 +6,12 @@ jobs:
     environment:
       GRADLE_OPTS: -Dorg.gradle.console=plain -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false
     steps:
+      - checkout
       - restore_cache:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
           key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
       - run: ./gradlew --parallel resolveConfigurations
-
       - save_cache:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:
@@ -20,6 +20,10 @@ jobs:
           key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
           paths:
             - ~/.gradle/caches
+      - run: ./gradlew --parallel --stacktrace classes testClasses
+      - persist_to_workspace:
+          root: .
+          paths: [ . ]
 
   darwin-build-and-run:
     macos:
