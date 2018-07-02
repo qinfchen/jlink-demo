@@ -11,19 +11,6 @@ dependencies {
 File jarPath = configurations.needsPatching.getResolvedConfiguration().getFiles()[0]
 String jarName = jarPath.getName().replace(".jar", "")
 
-task jdeps(type: Exec) {
-    // TODO(dfox): make these dependencies expressable nicely
-    dependsOn tasks.getByPath(":patched:jackson-core:patchJar")
-    dependsOn tasks.getByPath(":patched:jackson-annotations:patchJar")
-
-    def outputDir = "$buildDir/jdeps/${jarName}"
-    commandLine "jdeps", "-verbose",
-        "--module-path", "../jackson-core/build/patchJar/jackson-core-2.9.5.jar:../jackson-annotations/build/patchJar/jackson-annotations-2.9.5.jar",
-        "--generate-module-info", outputDir,
-        jarPath
-    outputs.dir file(outputDir)
-}
-
 task merge(type: Copy, dependsOn: [unpack, jdeps]) {
     from(jdeps.outputs.files)
     into("$buildDir/unpack/${jarName}")

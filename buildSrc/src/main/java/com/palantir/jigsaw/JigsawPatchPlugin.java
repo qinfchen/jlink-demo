@@ -26,7 +26,7 @@ public class JigsawPatchPlugin implements Plugin<Project> {
 
         project.getConfigurations().create("needsPatching");
         Copy unpack = project.getTasks().create("unpack", Copy.class);
-//        Exec jdeps = project.getTasks().create("jdeps", Exec.class);
+        Exec jdeps = project.getTasks().create("jdeps", Exec.class);
 //        Copy merge = project.getTasks().create("unpack", Copy.class);
         Exec compileModuleInfo = project.getTasks().create("compileModuleInfo", Exec.class);
 //        Copy copyJarForPatching = project.getTasks().create("copyJarForPatching", Copy.class);
@@ -48,8 +48,7 @@ public class JigsawPatchPlugin implements Plugin<Project> {
                         project.getBuildDir(), jarName));
 
 
-                System.out.println(manifestFile.toString());
-
+                // compileModuleInfo tasks
                 Task merge = project.getTasks().getByName("merge");
                 compileModuleInfo.dependsOn(merge);
                 Manifest manifest = new DefaultManifest(manifestFile, new IdentityFileResolver());
@@ -70,6 +69,19 @@ public class JigsawPatchPlugin implements Plugin<Project> {
 
                 compileModuleInfo.setCommandLine(commands);
                 compileModuleInfo.getOutputs().dir(outputDir);
+
+                // jdeps
+                File jdepsOutputDir = new File(String.format("%s/jdeps/%s", project.getBuildDir(), jarName));
+                List<String> jdepsCommands = new ArrayList<>();
+                jdepsCommands.add("jdeps");
+                jdepsCommands.add("--module-path");
+                jdepsCommands.add("../jackson-core/build/patchJar/jackson-core-2.9.5.jar:../jackson-annotations/build/patchJar/jackson-annotations-2.9.5.jar");
+                jdepsCommands.add("--generate-module-info");
+                jdepsCommands.add(outputDir.toString());
+                jdepsCommands.add(jarFile.getAbsolutePath());
+                jdeps.setCommandLine(jdepsCommands);
+                jdeps.getOutputs().dir(jdepsOutputDir);
+                //
             });
         });
     }

@@ -13,12 +13,6 @@ dependencies {
 File jarPath = configurations.needsPatching.getResolvedConfiguration().getFiles()[0]
 String jarName = jarPath.getName().replace(".jar", "")
 
-task jdeps(type: Exec) {
-    def outputDir = "$buildDir/jdeps/${jarName}"
-    commandLine "jdeps", "--add-modules=ALL-MODULE-PATH", "--generate-module-info", outputDir, jarPath
-    outputs.dir file(outputDir)
-}
-
 task merge(type: Copy, dependsOn: [unpack, jdeps]) {
     from(jdeps.outputs.files)
     into("$buildDir/unpack/${jarName}")

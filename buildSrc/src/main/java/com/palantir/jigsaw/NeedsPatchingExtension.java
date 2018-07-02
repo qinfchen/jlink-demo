@@ -7,7 +7,7 @@ import java.util.Set;
 
 public class NeedsPatchingExtension {
 
-    private final Set<String> modules = new HashSet<String>();
+    private final Set<String> modules = new HashSet<>();
 
     public final void implementation(String module) {
         modules.add(module);
