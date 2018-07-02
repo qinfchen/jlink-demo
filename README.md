@@ -82,5 +82,6 @@ Note that intellij will not recongize gradle apis under the BuildSrc folder with
 **Cross Targeting** - Jlink creates modular runtime images and, since these images are a generalization of JRE, JDK, and platform specific, it cannot be used to create cross-platform executables in a single setting. There are workarounds to produce runtime images for different OSs.
   - use different docker images for circle ci builds
   - download and unpack multiple versions of JDK and reference to the corresponding JDK `jmods` on the module path for the Jlink call to produce desired runtime image
+  - jmod supports `--target-platform` when building JMOD files, however jlink is still platform JDK (osx vs linux) denendent when it is used to link JMOD files.
 
 **Automatic modules** - Since automatic modules are named modules for non modular jars which do not contain module-info files, Jlink does not know what modules and dependencies need to be included to create an optimized runtime image. Note that automatic modules can cause module path hell if consumers accidently consume a non modular jar does not contain `Automatic-Module-Name`
