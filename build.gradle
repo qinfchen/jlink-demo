@@ -57,7 +57,7 @@ subprojects {
     // apply plugin: 'com.palantir.baseline-error-prone' // doesn't work with java 10 yet!
     apply plugin: 'com.palantir.baseline-class-uniqueness'
 
-    sourceCompatibility = 1.9
+    sourceCompatibility = "10.0.1"
 }
 
 dependencies {
