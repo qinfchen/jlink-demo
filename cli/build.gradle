@@ -4,23 +4,35 @@ plugins {
     id 'application'
 }
 
+apply plugin: 'com.palantir.jigsaw-patch'
+
+needsPatching {
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+}
+
 javaModule.name = 'cli'
 mainClassName = 'cli.Main'
 
 dependencies {
     implementation 'org.slf4j:slf4j-api'
     implementation 'org.slf4j:slf4j-simple' // should this be runtime ??
-    implementation files('../patched/jackson-core/build/patchJar/jackson-core-2.9.5.jar') {
-        builtBy tasks.getByPath(':patched:jackson-core:patchJar')
+    implementation files('./build/patchJar/jackson-core-2.9.5.jar') {
+        builtBy tasks.getByPath('patchJars')
     }
 
-    implementation files('../patched/jackson-annotations/build/patchJar/jackson-annotations-2.9.5.jar') {
-        builtBy tasks.getByPath(':patched:jackson-annotations:patchJar')
+    implementation files('./build/patchJar/jackson-annotations-2.9.5.jar') {
+        builtBy tasks.getByPath('patchJars')
     }
 
-    implementation files('../patched/jackson-databind/build/patchJar/jackson-databind-2.9.5.jar') {
-        builtBy tasks.getByPath(':patched:jackson-databind:patchJar')
+    implementation files('.build/patchJar/jackson-databind-2.9.5.jar') {
+        builtBy tasks.getByPath('patchJars')
     }
+
+    needsPatching 'com.fasterxml.jackson.core:jackson-core'
+    needsPatching 'com.fasterxml.jackson.core:jackson-annotations'
+    needsPatching "com.fasterxml.jackson.core:jackson-databind"
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }

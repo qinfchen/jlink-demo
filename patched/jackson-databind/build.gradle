@@ -5,6 +5,8 @@ needsPatching {
 }
 
 dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
     needsPatching 'com.fasterxml.jackson.core:jackson-databind'
 }
 

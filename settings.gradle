@@ -1,4 +1,1 @@
 include 'cli'
-include 'patched:jackson-core'
-include 'patched:jackson-annotations'
-include 'patched:jackson-databind'
