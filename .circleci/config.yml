@@ -9,14 +9,14 @@ jobs:
       JAVA_HOME: /Library/Java/JavaVirtualMachines/jdk-10.0.1.jdk/Contents/Home
     steps:
       - checkout
+      - run: brew upgrade
       - restore_cache:
           key: brew-v2-{{ checksum "/usr/local/Homebrew/bin/brew" }}
-      - run: brew upgrade && brew cask install java
+      - run: brew cask install java
       - save_cache:
           key: brew-v2-{{ checksum "/usr/local/Homebrew/bin/brew" }}
           paths:
-            - /usr/local
-            - /Library
+            - /Library/java
       - restore_cache:
           key: gradle-wrapper-darwin-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
