@@ -8,16 +8,16 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          key: gradle-wrapper-v2-{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
-          key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
+          key: gradle-cache-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
       - run: ./gradlew --parallel resolveConfigurations
       - save_cache:
-          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          key: gradle-wrapper-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:
             - ~/.gradle/wrapper
       - save_cache:
-          key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
+          key: gradle-cache-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
           paths:
             - ~/.gradle/caches
       - run: ./gradlew --parallel --stacktrace classes testClasses
@@ -36,9 +36,9 @@ jobs:
       - checkout
       - run: brew upgrade && brew cask install java
       - restore_cache:
-          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          key: gradle-wrapper-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
-          key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
+          key: gradle-cache-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
       - run: ./gradlew doSomething
       - run: ./gradlew tgz
       - run: ./cli/build/mydist/bin/cli
@@ -54,9 +54,9 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          key: gradle-wrapper-v2-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
-          key: gradle-cache-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
+          key: gradle-cache-v2-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}
       - run: ./gradlew doSomething
       - run: ./gradlew tgz
       - run: ./cli/build/mydist/bin/cli
