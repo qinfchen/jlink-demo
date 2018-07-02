@@ -68,14 +68,16 @@ $ jlink --version
 ```
 
 ## Jlink 
-The workflow in IntelliJ is not seamless, but still workable.  Use _File_ -> _Open_ and then select the root `build.gradle` file. You should open this as a new project.  When you open `Main.java`, you will probably be prompted to _Setup SDK_. You want `10` here, so click _Configure..._ to add this for the first time.  All red underlines should disappear and
+The workflow in IntelliJ is not seamless, but still workable.  Use _File_ -> _Open_ and then select the root `build.gradle` file. You should open this as a new project.  When you open `Main.java`, you will probably be prompted to _Setup SDK_. You want `10` here, so click _Configure..._ to add this for the first time.  All red underlines should disappear
+
+Note that intellij will not recongize gradle apis under the BuildSrc folder without opening the root `build.gradle` as a new project. 
 
 ## Tooling Gotchas
 
 **Patched jars** - To help java libraries migrating to Java 9, Java libraries can use automatic modules in conjunction with `Automatic-Module-Name`  As of version 2.9.5, Jackson does not yet publish a `module-info` file.  In order to use `jlink`, the build script expands these jars, uses the `jdeps` tool to generate a `module-info` and then re-compiles them.
 
-    - [PR](https://github.com/FasterXML/jackson-core/pull/358) for Jigsaw support has been slate for the 3.x release.
-    - [moditect](https://github.com/moditect/moditect) provides tools for working with Jigsaw and solves issues as such EXCEPT that it is exclusively for Maven plugins. [PR](https://github.com/moditect/moditect/pull/44) for gradle plugin hasn't been updated since March.
+  - [jackson PR](https://github.com/FasterXML/jackson-core/pull/358) for Jigsaw support has been slated for the 3.x release.
+  - [moditect](https://github.com/moditect/moditect) provides tools for working with Jigsaw and solves issues as such EXCEPT that it is exclusively for Maven plugins. [PR](https://github.com/moditect/moditect/pull/44) for gradle plugin hasn't been updated since March.
 
 **Cross Targeting** - Jlink creates modular runtime images and, since these images are a generalization of JRE, JDK, and platform specific, it cannot be used to create cross-platform executables in a single setting. There are workarounds to produce runtime images for different OSs.
   - use different docker images for circle ci builds
